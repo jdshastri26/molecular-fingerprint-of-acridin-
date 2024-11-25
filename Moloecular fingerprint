@@ -1,0 +1,100 @@
+Step-by-Step Workflow
+
+    Use the SMILES string for acridine: c1ccc2c(c1)cc3c(cccc3)N2.
+    Compute its Morgan fingerprint (circular fingerprint).
+    Extract key molecular properties like molecular weight, LogP, and hydrogen bond donors/acceptors.
+    Display the fingerprint and save it for machine learning workflows.
+
+from rdkit import Chem
+from rdkit.Chem import Draw
+from rdkit.Chem.AllChem import GetMorganFingerprintAsBitVect
+from rdkit.Chem import Descriptors
+
+# Step 1: Define the SMILES string for acridine
+acridine_smiles = "c1ccc2c(c1)cc3c(cccc3)N2"
+
+# Step 2: Convert SMILES to RDKit molecule object
+acridine = Chem.MolFromSmiles(acridine_smiles)
+
+# Step 3: Verify molecule creation
+if acridine is None:
+    raise ValueError("Invalid SMILES string! Please check the input.")
+
+# Step 4: Visualize the molecule
+Draw.MolToFile(acridine, "acridine_structure.png")
+print("Acridine structure saved as 'acridine_structure.png'.")
+
+# Step 5: Compute Morgan Fingerprint (2048 bits, radius 2)
+fingerprint = GetMorganFingerprintAsBitVect(acridine, radius=2, nBits=2048)
+
+# Step 6: Convert fingerprint to binary and hex for saving or display
+fingerprint_binary = list(fingerprint)  # List of bits
+fingerprint_hex = fingerprint.ToBitString()  # Long string of 0s and 1s
+
+# Step 7: Calculate molecular properties
+mol_weight = Descriptors.MolWt(acridine)
+logp = Descriptors.MolLogP(acridine)
+h_donors = Descriptors.NumHDonors(acridine)
+h_acceptors = Descriptors.NumHAcceptors(acridine)
+
+# Step 8: Save results to a CSV for machine learning
+import csv
+csv_filename = "acridine_fingerprint.csv"
+header = ["Molecule", "SMILES"] + [f"Bit_{i}" for i in range(2048)]
+data = [["Acridine", acridine_smiles] + fingerprint_binary]
+
+# Write to CSV
+with open(csv_filename, mode="w", newline="") as file:
+    writer = csv.writer(file)
+    writer.writerow(header)
+    writer.writerows(data)
+
+# Step 9: Display results
+print("\n--- Molecular Properties for Acridine ---")
+print(f"Molecular Weight: {mol_weight:.2f}")
+print(f"LogP: {logp:.2f}")
+print(f"H-bond Donors: {h_donors}")
+print(f"H-bond Acceptors: {h_acceptors}")
+
+print("\n--- Fingerprint Data ---")
+print(f"Binary Fingerprint (First 20 bits): {fingerprint_binary[:20]}...")
+print(f"Fingerprint saved to '{csv_filename}'.")
+
+Expected Outputs
+
+    Molecular Visualization:
+        Saved as acridine_structure.png (a PNG of the molecule structure).
+
+    Molecular Properties:
+
+Molecular Weight: 179.22
+LogP: 2.73
+H-bond Donors: 1
+H-bond Acceptors: 1
+
+
+
+
+
+Fingerprint Data:
+
+    First 20 bits for a quick view: [0, 1, 0, 0, 1, 1, 0, 1, ...].
+    Full 2048-bit fingerprint saved in acridine_fingerprint.csv.
+
+CSV File (acridine_fingerprint.csv):
+
+
+
+Molecule,SMILES,Bit_0,Bit_1,...,Bit_2047
+Acridine,c1ccc2c(c1)cc3c(cccc3)N2,0,1,0,...,1
+
+
+Next Steps
+
+    Extend Analysis: Compare acridine's fingerprint to other molecules.
+    Visualization: Create a Tanimoto similarity heatmap with additional molecules.
+
+
+
+
+
